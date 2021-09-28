@@ -9,7 +9,7 @@ import os
 my_colors = ['#fde725', '#9fda3a', '#4ac26e', '#1fa187', '#27a187', '#365c8d', '#47327f', '#440154']
 my_colormap = LinearSegmentedColormap.from_list('my_colormap', my_colors, N=500)
 
-IMAGE_PATH = 'binary thresholded.tif'
+IMAGE_PATH = 'binary.png'
 PIL.Image.MAX_IMAGE_PIXELS = 9999999999
 
 large_image = Image.open(IMAGE_PATH)
@@ -19,21 +19,16 @@ num_rows = math.ceil(i_height / 1000)
 num_cols = math.ceil(i_width / 1000)
 
 
-def split_grid():
-    tiles = image_slicer.slice(IMAGE_PATH, num_rows * num_cols, save=False)
-    image_slicer.save_tiles(tiles, directory='tiles', prefix='slice', format='png')
+def split_grid(directory, full_image_path):
+    tiles = image_slicer.slice(full_image_path, num_rows * num_cols, save=False)
+    image_slicer.save_tiles(tiles, directory=directory, prefix='slice', format='png')
     sample_tile_file = os.listdir('tiles')[0]
     sample_tile = Image.open(f'tiles/{sample_tile_file}')
     global tile_dims
     tile_dims = (sample_tile.height, sample_tile.width)
-    print(tile_dims)
 
 
-def calculate_area():
-    pass
-
-
-def get_binary_density_and_recolor(image_path):
+def get_binary_density_and_recolor(image_path, tile_position):
     im = Image.open(image_path)
     # mode 'L' is greyscale. We want RGB because we have a binary image + a colored ROI -> 8bit
     if im.mode == 'L':
@@ -61,8 +56,10 @@ def get_binary_density_and_recolor(image_path):
                 count_0 += 1
             else:
                 count_red += 1
-
-    normalized_area = (500 * count_1) / (width * height)
+    try:
+        normalized_area = (500 * count_1) / tile_area_list[tile_position]
+    except ZeroDivisionError:
+        normalized_area = (500 * count_1) / (tile_dims[0] * tile_dims[1])
 
     # extracts the color corresponding to each value 1-500 in the colormap.
     cmap_color_hex = matplotlib.colors.rgb2hex(my_colormap(round(normalized_area)))
@@ -96,11 +93,44 @@ def re_stitch():
 def make_histogram():
     pass
 
+
+def mask_roi_area():
+    mask = Image.open('mask.png')
+    if mask.mode != 'L':
+        mask.convert('L')
+    split_grid(directory='mask_tiles', full_image_path='mask.png')
+
+    global tile_area_list
+    tile_area_list = []
+
+    for t in os.listdir('mask_tiles'):
+        area_tile = Image.open(f'mask_tiles/{t}')
+        area_tile_dims = (area_tile.height, area_tile.width)
+        if set(area_tile.getdata()) == {0}:
+            tile_area_list.append(0)
+        else:
+            white_area = 0
+            for q in range(area_tile_dims[1]):
+                for r in range(area_tile_dims[0]):
+                    px = area_tile.getpixel((q, r))
+                    if px != 0:
+                        white_area += 1
+            tile_area_list.append(white_area)
+    print('done getting mask area')
+
+
 # ///////////Program/////////////
-split_grid()
-calculate_area()
+split_grid(directory='tiles', full_image_path=IMAGE_PATH)
+mask_roi_area()
+
+step = 0
 for tile in os.listdir('tiles'):
-    get_binary_density_and_recolor(f'tiles/{tile}')
+    get_binary_density_and_recolor(image_path=f'tiles/{tile}', tile_position=step)
+    step += 1
+    print(step)
+
 re_stitch()
 make_histogram()
+
+
 
