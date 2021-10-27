@@ -9,6 +9,8 @@ import image_slicer
 import os
 import time
 
+# Add static variable declarations for cython to increase speed!
+
 my_colormap = plt.get_cmap('inferno')
 
 IMAGE_PATH = 'binary.png'
