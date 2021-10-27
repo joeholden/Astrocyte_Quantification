@@ -1,10 +1,13 @@
 # Astrocyte_Quantification
 This project takes in GFAP images of wholemount retinas and returns a heatmap version of the original image highlighting areas based on GFAP density. It also returns a histogram of density values (for tiles the image was split into and processed before re-stitching). Although designed for GFAP labeling analysis, there is no reason why it cannot be used for other IHC labeling as well. 
 
-The program is not fully autonomous- it will require minimal hand processing of the image using both ImageJ and Python. 
+The program is not fully autonomous- it will require minimal hand processing of the image using ImageJ before running the python code. 
 
-1. To begin, download the imageJ macro. This does pre-processing of the image (rolling-ball processing with 50 px radius, adjusting brightness, thresholding the image to remove background, and makes the image binary. It will also save the file to a directory of your choosing.
-2. The only manual processing occurs as the user segments the wholemount retina from the background. In ImageJ simply use the polygon segment tool to create an ROI around the retina. Click 't' to add to the manager. Inverse the selection and delete to remove any staining outside of the tissue like for bubbles. Invert the ROI back and flatten it. Save this image as binary.png
+[ImageJ Processing]
+1. Load your image into ImageJ. Subtract background using the rolling ball function. I find that rolling ball radius of 50px works well in most cases I have worked with. Adjust the brightness so it is easier to see- at this point it may look quite dim. Adjust brightness- and clicking auto twice seems to work well most of the time. Threshold your image appropriately. For GFAP images, I threshold so that fine processes are ~99-100% represented while avoiding background. 
+2. The only other manual processing occurs as the user segments the wholemount retina from the background. In ImageJ simply use the polygon segment tool to create an ROI around the retina. Click 't' to add to the manager. Inverse the selection and delete to remove any staining outside of the tissue such as in the case of bubbles. Also if some samples have the optic nerve head in tact and others have a hole, for consistency, remove this region with a small circular ROI. Save this image as binary.png
 3. You will also need a binary mask. Delete all the contents of a duplicated image in ImageJ- make sure it is binary. Show the ROI you made of the retina on the screen and hit 'ctrl F' to fill the ROI with white. Save this as mask.png. 
-4. Place both binary.png and mask.png in your home directory (housing the main.py program). 
-5. Move to a Python IDE (such as PyCharm) and run the rest of the code
+4. Place both binary.png and mask.png in your home directory (housing the main.py program).
+
+[Python] 
+6. Move to a Python IDE (such as PyCharm) and run the rest of the code
