@@ -88,20 +88,12 @@ Z = (wt_mean - ko_mean) / (math.sqrt((ko_sd ** 2) + (wt_sd ** 2)))
 print(Z)
 
 
-def mann_whitney_u_test(distribution_1, distribution_2):
+def mann_whitney_u_test(d1, d2):
     """
-    Perform the Mann-Whitney U Test, comparing two different distributions.
-    Args:
-       distribution_1: List.
-       distribution_2: List.
-    Outputs:
-        u_statistic: Float. U statisitic for the test.
-        p_value: Float.
+    Mann-Whitney U Test: compares two distributions.
     """
-    u_statistic, p_value = stats.mannwhitneyu(distribution_1, distribution_2)
+    u_statistic, p_value = stats.mannwhitneyu(d1, d2)
     return u_statistic, p_value
 
 
-#### MAIN FUNCTION ####
-# Perform the Mann-Whitney U Test on the two distributions
 print(mann_whitney_u_test(wt, ko))
