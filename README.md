@@ -4,5 +4,7 @@ This project takes in GFAP images of wholemount retinas and returns a heatmap ve
 The program is not fully autonomous- it will require minimal hand processing of the image using both ImageJ and Python. 
 
 1. To begin, download the imageJ macro. This does pre-processing of the image (rolling-ball processing with 50 px radius, adjusting brightness, thresholding the image to remove background, and makes the image binary. It will also save the file to a directory of your choosing.
-2. The only manual processing occurs as the user segments the wholemount retina from the background. In ImageJ simply use the polygon segment tool to create an ROI around the retina. Click 't' to add to the manager. Inverse the selection and delete to remove any staining outside of the tissue like for bubbles. Invert the ROI back and flatten it. Save this image as a .tif
-3. Move to a Python IDE (such as PyCharm) and run the rest of the code
+2. The only manual processing occurs as the user segments the wholemount retina from the background. In ImageJ simply use the polygon segment tool to create an ROI around the retina. Click 't' to add to the manager. Inverse the selection and delete to remove any staining outside of the tissue like for bubbles. Invert the ROI back and flatten it. Save this image as binary.png
+3. You will also need a binary mask. Delete all the contents of a duplicated image in ImageJ- make sure it is binary. Show the ROI you made of the retina on the screen and hit 'ctrl F' to fill the ROI with white. Save this as mask.png. 
+4. Place both binary.png and mask.png in your home directory (housing the main.py program). 
+5. Move to a Python IDE (such as PyCharm) and run the rest of the code
