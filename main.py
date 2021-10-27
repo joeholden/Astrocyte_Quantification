@@ -81,8 +81,10 @@ def get_binary_density_and_recolor(image_path, tile_position):
                 else:
                     pixels_new[k, l] = pixel_map[k, l]
         img.save(f'recolored_tiles/{image_path.split("/")[1]}')
-        if count_1 > 0:
+        try:
             area_fractions.append(round(count_1 / tile_area_list[tile_position], 2))
+        except ZeroDivisionError:
+            area_fractions.append(0)
     else:
         im.save(f'recolored_tiles/{image_path.split("/")[1]}')
 
@@ -109,11 +111,29 @@ def re_stitch():
 
 def make_histogram():
     """Makes a histogram plotting the frequency of each non-zero density tile"""
-    fig = plt.figure(dpi=300)
-    plt.hist(area_fractions, bins=50)
-    plt.title('Frequency Distribution of Astrocyte Densities in Local Retina Regions')
-    plt.xlabel('GFAP Tile Density')
-    plt.ylabel('Frequency')
+    fig, ax = plt.subplots(figsize=(14, 8), dpi=100)
+    font = {'fontname': 'Arial'}
+
+    plt.hist(area_fractions, bins=34, color='#6d1b7b', alpha=1)
+
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['bottom'].set_visible(True)
+    ax.spines['left'].set_visible(True)
+
+    for axis in ['top', 'bottom', 'left', 'right']:
+        ax.spines[axis].set_linewidth(1.5)
+
+    ax.tick_params(width=2, length=7)
+    plt.xticks(fontsize=18)
+    ax.tick_params(axis='both', which='major', labelsize=18)
+    ax.tick_params(axis='both', which='minor', labelsize=18)
+
+    plt.xlim(-0.02, 1)
+    plt.xlabel('Density of GFAP', fontsize=24, **font)
+    plt.ylabel('Normalized Frequency', fontsize=24, **font)
+    plt.title('Distribution of Retinal GFAP Density', fontsize=36, **font)
+
     plt.savefig('histogram.png')
     print('Finished Making Histogram')
 
