@@ -9,6 +9,8 @@ import image_slicer
 import os
 import time
 
+# To run this program, set up the following folders in the directory you are running this program from:
+# [Area_Excel, binaries, histograms, mask_tiles, masks, recolored_tiles, stitched_binaries, tiles]
 # Add static variable declarations for cython to increase speed!
 
 def split_grid(directory, full_image_path):
@@ -23,11 +25,13 @@ def split_grid(directory, full_image_path):
 
 
 def get_binary_density_and_recolor(image_path, tile_position):
-    """Recolors each tile based on its binary image white density"""
+    """Recolors each tile based on its binary image white density.
+    Also returns total count of white pixels in binary image"""
     im = Image.open(image_path)
     # mode 'L' is greyscale. We want RGB because we have a binary image + a colored ROI -> 8bit
-    if im.mode == 'L':
-        im = im.convert('RGB')
+    # if im.mode == 'L':
+    #     im = im.convert('RGB')
+    im = im.convert('RGB')
     height, width = im.size
 
     if set(im.getdata()) != {(0, 0, 0)}:
@@ -40,8 +44,8 @@ def get_binary_density_and_recolor(image_path, tile_position):
         img = Image.new(im.mode, im.size)
         pixels_new = img.load()
 
-        # Count the white, black, and non-binary pixels (if someone made a mistake).
-        # ImageJ ROIs are not one color if made on a diagonal.
+        # Count the white and black pixels.
+
         for i in range(im.width):
             for j in range(im.height):
                 px = im.getpixel((i, j))
@@ -67,6 +71,7 @@ def get_binary_density_and_recolor(image_path, tile_position):
                 else:
                     pixels_new[k, l] = pixel_map[k, l]
         img.save(f'recolored_tiles/{image_path.split("/")[1]}')
+
         try:
             area_fractions.append(round(count_1 / tile_area_list[tile_position], 2))
             full_area_fractions_for_zip.append(round(count_1 / tile_area_list[tile_position], 2))
@@ -92,11 +97,12 @@ def re_stitch():
 
     for y in range(0, large_image.height - tile_dims[0] + 1, tile_dims[0]):
         for x in range(0, large_image.width - tile_dims[1] + 1, tile_dims[1]):
-            # Fix this shit
+
             try:
                 tile_image = Image.open(f'recolored_tiles/{image_list[current_tile]}')
-            except:
-                pass
+            except Exception as e:
+                print(e)
+
             stitched_image.paste(tile_image, (x, y), 0)
             current_tile += 1
 
@@ -173,7 +179,7 @@ def mask_roi_area():
 
 
 def make_background_transparent():
-    """Makes any pixel that is black transparent"""
+    """Makes any pixel that is black transparent. Likely not used in final program"""
     im = Image.open('stitched_binary thresholded.tif.png')
     im = im.convert('RGBA')
     pixel_map_t = im.load()
@@ -231,6 +237,9 @@ def batch():
         # ~1000x1000 px tiles
         num_rows = math.ceil(i_height / 1000)
         num_cols = math.ceil(i_width / 1000)
+        # num_rows = 30
+        # num_cols = 30
+
         area_fractions = []
         full_area_fractions_for_zip = []
 
@@ -262,5 +271,12 @@ def batch():
 
         print("--- %s seconds ---" % round((time.time() - start_time), 3))
 
+
+folders = ['Area_Excel', 'binaries', 'histograms', 'mask_tiles', 'masks', 'recolored_tiles',
+           'stitched_binaries', 'tiles']
+for n in range(len(folders)):
+    isExist = os.path.exists(folders[n])
+    if not isExist:
+        os.mkdir(folders[n])
 
 batch()
