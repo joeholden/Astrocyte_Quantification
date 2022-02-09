@@ -40,7 +40,7 @@ def get_binary_density_and_recolor(image_path, tile_position):
         img = Image.new(im.mode, im.size)
         pixels_new = img.load()
 
-        # Count the white, black, and non-binary pixels.
+        # Count the white, black, and non-binary pixels (if someone made a mistake).
         # ImageJ ROIs are not one color if made on a diagonal.
         for i in range(im.width):
             for j in range(im.height):
