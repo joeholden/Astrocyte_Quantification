@@ -9,8 +9,6 @@ import image_slicer
 import os
 import time
 
-# To run this program, set up the following folders in the directory you are running this program from:
-# [Area_Excel, binaries, histograms, mask_tiles, masks, recolored_tiles, stitched_binaries, tiles]
 # Add static variable declarations for cython to increase speed!
 
 def split_grid(directory, full_image_path):
