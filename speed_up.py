@@ -33,7 +33,7 @@ def return_rgb_for_colormap(lower_limit, upper_limit, value_to_map, mpl_colormap
     norm = plt.Normalize(lower_limit, upper_limit)
 
     color = cmap(norm(value_to_map))
-    color = [int(round(i*255, 0)) for i in color]
+    color = [int(round(i * 255, 0)) for i in color]
     color = (color[0], color[1], color[2])
     return color
 
@@ -41,7 +41,6 @@ def return_rgb_for_colormap(lower_limit, upper_limit, value_to_map, mpl_colormap
 def rgb2bgr(rgb_tuple):
     bgr = (rgb_tuple[2], rgb_tuple[1], rgb_tuple[0])
     print(bgr)
-
 
 
 def loop_through_pixels(image_object, function, f_param):
@@ -57,14 +56,14 @@ def get_pixels_in_rectangle(starting_point, radius):
     y = starting_point[1]
     r = radius
 
-    x_bounds = (x-r, x+r)
-    y_bounds = (y-r, y+r)
+    x_bounds = (x - r, x + r)
+    y_bounds = (y - r, y + r)
 
     pixels = []
     for i in range(x_bounds[0], x_bounds[1]):
         for j in range(y_bounds[0], y_bounds[1]):
             # im[j, i] = [0, 0, 0]
-            pixels.append((i,j))
+            pixels.append((i, j))
     return pixels
 
 
@@ -109,11 +108,11 @@ def create_heatmap(image_path, width_bounds, height_bounds, radius, cmap):
                     int_sum += px_rgb
             except IndexError:
                 num_px_out_of_range += 1
-                pass #found the image bounds
-            rgb = return_rgb_for_colormap(lower_limit=0, upper_limit=256*(RADIUS**2 - num_px_out_of_range),
+                pass  # found the image bounds
+            rgb = return_rgb_for_colormap(lower_limit=0, upper_limit=256 * (RADIUS ** 2 - num_px_out_of_range),
                                           value_to_map=int_sum, mpl_colormap=cmap)
             # Account for edge effects because of purple bar at the bottom? num_px_out_of_range doesnt fix this
-            heat_image[y-height_bounds[0],x] = rgb
+            heat_image[y - height_bounds[0], x] = rgb
 
     # plot_image(image_object=heat_image, from_path=False)
     Path('heat_slices').mkdir(parents=True, exist_ok=True)
@@ -122,27 +121,35 @@ def create_heatmap(image_path, width_bounds, height_bounds, radius, cmap):
 
 if __name__ == '__main__':
     start = time.time()
-    RADIUS = 3
-    IMAGE_PATH = 'test_dolly.png'
+    RADIUS = 10
+    IMAGE_PATH = 'downsized.png'
     CMAP = 'viridis'
     im = cv2.imread(IMAGE_PATH, cv2.IMREAD_UNCHANGED)
     dictionary = split_image_for_multiprocessing(IMAGE_PATH)
 
-    #spawn processes. Leave one cpu core open for system
-    for core in range(mp.cpu_count()-1):
+    # spawn processes. Leave one cpu core open for system
+    processes = []
+    for core in range(mp.cpu_count() - 1):
         data = dictionary[f'image_{core}']
-        p = mp.Process(target=create_heatmap, args=(IMAGE_PATH, (data[2], data[3]),
-                                                    (data[0], data[1]), RADIUS, CMAP))
-        p.start()
-
+        processes.append(mp.Process(target=create_heatmap, args=(IMAGE_PATH, (data[2], data[3]),
+                                                    (data[0], data[1]), RADIUS, CMAP)))
+    try:
+        for interpreter in processes:
+            interpreter.start()
+        for interpreter in processes:
+            # blocks until the process terminates
+            interpreter.join()
+    except Exception as e:
+        print(e)
 
     image_names = []
     for root, dirs, files in os.walk('heat_slices'):
         for file in files:
-            image_names.append(file)
+            if file.endswith('.png'):
+                image_names.append(file)
+
     image_names = sorted([int(i.split('_')[-1].split('.')[0]) for i in image_names])
-    print(image_names)
-    image_names = [cv2.imread(os.path.join('heat_slices', 'heat_slice_'+str(i)+'.png')) for i in image_names]
+    image_names = [cv2.imread(os.path.join('heat_slices', 'heat_slice_' + str(i) + '.png')) for i in image_names]
 
     reconstruct = cv2.vconcat(image_names)
 
