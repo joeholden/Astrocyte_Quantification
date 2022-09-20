@@ -1,6 +1,4 @@
 import cv2
-import matplotlib.cm as cm
-import matplotlib as mpl
 import matplotlib.pyplot as plt
 import math
 import datetime
