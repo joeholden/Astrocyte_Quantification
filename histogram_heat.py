@@ -2,13 +2,13 @@ import cv2
 import matplotlib.pyplot as plt
 import math
 from collections import defaultdict
-from speed_up import split_image_for_multiprocessing
+from improved_heatmap import split_image_for_multiprocessing
 import multiprocessing as mp
 import concurrent.futures
 import time
 
-BINARY_PATH = 'binary2.png'
-HEATMAP_PATH = 'reconstructed.png'
+BINARY_PATH = 'binary.png'
+HEATMAP_PATH = 'Reconstructed Images/2022_09_19-10_30_43_PM_        Radius_2.png'
 plt.style.use('ggplot')
 BIN_NUMBER = 16 # Use 16 bins ~sqrt(255)
 COLOR = "#4d0f4d"
@@ -38,7 +38,7 @@ if __name__ == '__main__':
     # multithreading is faster than multiprocessing in this case
     with concurrent.futures.ThreadPoolExecutor() as executor:
         futures = []
-        for core in range(mp.cpu_count()):
+        for core in range(mp.cpu_count()-1):
             data = dictionary[f'image_{core}']
             f = executor.submit(histogram, (data[2], data[3]), (data[0], data[1]))
             futures.append(f)
@@ -47,6 +47,7 @@ if __name__ == '__main__':
         for f in concurrent.futures.as_completed(futures):
             for p in f.result():
                 merged_intensities.append(p)
+
 
         plt.figure(figsize=(8, 6))
         plt.hist(merged_intensities, bins=BIN_NUMBER, color=COLOR)
