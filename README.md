@@ -16,3 +16,5 @@ The program is not fully autonomous- it will require minimal hand processing of 
 Note:
 batch.py is the script used in Holden et. al, 2022.
 improved_heatmap.py improves upon the ideas of the original script but averages pixel intensities in an arbitrary window around each pixel. Additionally, it employs multiprocessing which greatly speeds up the runtime of the script, especially on large images. histogram_heatmap.py generates a histogram of these intensity values and is meant to be used with the improved_heatmap.py script. 
+
+For the improved_heatmap.py and resize.py Good parameters are to scale down a 20x montaged retina by a factor of 13 and take density averages for a 20x20 px grid surrounding each pixel. 
