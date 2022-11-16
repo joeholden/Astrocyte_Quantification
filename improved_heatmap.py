@@ -120,12 +120,13 @@ def create_heatmap(image_path, width_bounds, height_bounds, radius, cmap):
 
 if __name__ == '__main__':
     start = time.time()
-    RADIUS = 2
-    IMAGE_PATH = 'test_dolly.png'
-    CMAP = 'viridis'
+    RADIUS = 30
+    IMAGE_PATH = '11_15/downsized binary.png'
+    # If CMAP is not 'gray', the histogram x-span is reduced because of RGB to 8 bit conversion
+    CMAP = 'gray'
+
     im = cv2.imread(IMAGE_PATH, cv2.IMREAD_UNCHANGED)
     dictionary = split_image_for_multiprocessing(IMAGE_PATH)
-
 
     with concurrent.futures.ProcessPoolExecutor() as executor:
         for core in range(mp.cpu_count()-1):
@@ -151,4 +152,3 @@ if __name__ == '__main__':
     shutil.rmtree('heat_slices')
     stop = time.time()
     print(stop - start)
-
